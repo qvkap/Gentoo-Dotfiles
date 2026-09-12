@@ -1,0 +1,10 @@
+.zshrc.local
+*secret*
+*.secrets
+.histfile
+*.log
+*.tmp
+*.cache
+lazy-lock.json
+__pycache__/
+

@@ -1,0 +1,113 @@
+set $mod Mod4
+set $term foot
+set $menu fuzzel
+
+font pango:JetBrains Mono 10
+
+default_border none
+
+floating_modifier $mod normal
+
+default_floating_border pixel 2
+
+client.focused          #fab387 #181825 #cdd6f4 #fab387 #fab387
+client.focused_inactive #313244 #181825 #a6adc8 #313244 #313244
+client.unfocused        #313244 #181825 #a6adc8 #313244 #313244
+client.urgent           #f38ba8 #181825 #ffffff #f38ba8 #f38ba8
+
+input "type:keyboard" {
+    xkb_layout us,ru
+}
+bindsym --to-code $mod+space input type:keyboard xkb_switch_layout next
+
+input "type:touchpad" {
+    tap enabled
+    tap_button_map lrm
+    natural_scroll enabled
+    dwt enabled
+    accel_profile adaptive
+}
+
+bindsym --to-code $mod+Return exec $term
+bindsym --to-code $mod+d exec $menu
+bindsym --to-code $mod+p exec /home/rorka/.local/bin/koala-clash
+bindsym --to-code $mod+q kill
+bindsym --to-code $mod+Shift+q kill
+bindsym --to-code $mod+Shift+r reload
+bindsym --to-code $mod+Shift+e exit
+bindsym --to-code $mod+1 workspace 1
+bindsym --to-code $mod+2 workspace 2
+bindsym --to-code $mod+3 workspace 3
+bindsym --to-code $mod+4 workspace 4
+bindsym --to-code $mod+5 workspace 5
+bindsym --to-code $mod+6 workspace 6
+bindsym --to-code $mod+7 workspace 7
+bindsym --to-code $mod+8 workspace 8
+bindsym --to-code $mod+9 workspace 9
+
+bindsym XF86AudioRaiseVolume exec /home/rorka/.local/bin/osd.sh vol+
+bindsym XF86AudioLowerVolume exec /home/rorka/.local/bin/osd.sh vol-
+bindsym XF86AudioMute exec /home/rorka/.local/bin/osd.sh mute
+
+bindsym --to-code $mod+l exec swaylock
+
+bindsym XF86MonBrightnessDown exec /home/rorka/.local/bin/brightness.sh down
+bindsym XF86MonBrightnessUp   exec /home/rorka/.local/bin/brightness.sh up
+
+bindsym F5 exec /home/rorka/.local/bin/brightness.sh down
+bindsym F6 exec /home/rorka/.local/bin/brightness.sh up
+bindsym Print exec grim -g "$(slurp)" - | wl-copy
+bindsym $mod+Shift+s exec grim -g "$(slurp)" - | wl-copy
+
+gaps inner 0
+gaps outer 0
+
+corner_radius 12
+smart_corner_radius enable
+
+blur enable
+blur_xray disable
+blur_passes 3
+blur_radius 5
+blur_noise 0.02
+blur_brightness 0.9
+blur_contrast 0.9
+
+shadows disable
+
+layer_effects "launcher" blur enable
+
+output * bg /home/rorka/Pictures/wallpapers/walpper.png fill
+
+exec dbus-update-activation-environment --all
+exec xsettingsd
+
+exec /home/rorka/.local/bin/audio-start.sh
+
+bar {
+    position top
+    status_command ~/.config/sway/status.sh
+    font pango:JetBrains Mono, Symbols Nerd Font 10
+    pango_markup enabled
+    height 30
+    gaps 0
+    colors {
+        background #181825dd
+        statusline #cdd6f4
+        separator #6c7086
+        focused_workspace #fab387 #fab387 #181825
+        active_workspace #45475a #45475a #ffffff
+        inactive_workspace #45475a #313244 #cdd6f4
+        urgent_workspace #f38ba8 #f38ba8 #181825
+    }
+}
+
+for_window [app_id="foot"] floating enable, resize set width 1200 px height 700 px, move position center
+
+for_window [window_role="pop-up"] floating enable
+for_window [window_role="bubble"] floating enable
+for_window [window_role="dialog"] floating enable
+for_window [window_type="dialog"] floating enable
+for_window [app_id="xdg-desktop-portal-gtk"] floating enable, move position center
+
+exec mako

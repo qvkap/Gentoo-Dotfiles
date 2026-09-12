@@ -28,7 +28,7 @@ _chroot-enter() {
     sudo mount --bind /tmp "$root/tmp" 2>/dev/null
     sudo chroot "$root" /bin/bash -c \
         "export HOME=/root TERM='$TERM' PATH=/bin:/sbin:/usr/bin:/usr/sbin; \
-         PS1='(chroot) \w
+         PS1='(chroot) \w \\$ '; exec bash --norc --noprofile"
 }
 
 _chroot-exit-cleanup() {

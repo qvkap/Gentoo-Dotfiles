@@ -48,19 +48,22 @@ Minimalist Wayland desktop configuration for Gentoo Linux running SwayFX.
 - `.local/src/nowplaying/`: C source code for the terminal media display tool
 - `.zshrc`, `.zprofile`: Zsh configuration files
 - `etc/portage/make.conf`: Optimized Gentoo compilation flags
+- `install.sh`: Automated installation script
 
 ## Installation
 
-Clone the repository and copy the configurations to your home directory:
+Clone the repository and run the installation script:
 
 ```bash
 git clone https://github.com/qvkap/Gentoo-Dotfiles.git
 cd Gentoo-Dotfiles
-cp -r .config .local .zshrc .zprofile .gtkrc-2.0 Pictures ~
+chmod +x install.sh
+./install.sh
 ```
 
-To compile the `nowplaying` utility:
+Alternatively, copy the files manually:
 
 ```bash
+cp -r .config .local .zshrc .zprofile .gtkrc-2.0 Pictures ~
 gcc -O2 .local/src/nowplaying/main.c $(pkg-config --cflags --libs gio-2.0) -o ~/.local/bin/nowplaying
 ```

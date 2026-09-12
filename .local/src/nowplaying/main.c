@@ -27,7 +27,6 @@ static volatile sig_atomic_t running = 1;
 
 static void disable_raw_mode(void) {
     if (raw_mode_enabled) {
-        // Очистка экрана, возврат курсора и выход из alternate screen buffer
         printf("\033[?25h\033[?1049l");
         fflush(stdout);
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios);
@@ -43,10 +42,9 @@ static void enable_raw_mode(void) {
     struct termios raw = orig_termios;
     raw.c_lflag &= ~(ECHO | ICANON | ISIG);
     raw.c_cc[VMIN] = 0;
-    raw.c_cc[VTIME] = 0; // неблокирующий ввод
+    raw.c_cc[VTIME] = 0;
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 
-    // Вход в alternate screen buffer (как nvim) и скрытие курсора
     printf("\033[?1049h\033[H\033[?25l");
     fflush(stdout);
     raw_mode_enabled = 1;
@@ -74,7 +72,6 @@ static void free_player_info(PlayerInfo *info) {
     memset(info, 0, sizeof(*info));
 }
 
-// Получение информации о плеере по MPRIS
 static gboolean get_player_info(GDBusConnection *conn, const char *bus_name, PlayerInfo *info) {
     memset(info, 0, sizeof(*info));
     info->bus_name = g_strdup(bus_name);
@@ -162,7 +159,6 @@ static gboolean get_player_info(GDBusConnection *conn, const char *bus_name, Pla
     return (info->title != NULL || info->art_url != NULL);
 }
 
-// Разрешение пути к обложке
 static char *resolve_artwork(const char *art_url) {
     if (!art_url || strlen(art_url) == 0) return NULL;
 
@@ -186,7 +182,6 @@ static char *resolve_artwork(const char *art_url) {
     return NULL;
 }
 
-// Управление плеером по MPRIS
 static void send_mpris_cmd(GDBusConnection *conn, const char *bus_name, const char *action) {
     if (!conn || !bus_name) return;
     g_dbus_connection_call(
@@ -205,7 +200,6 @@ static void send_mpris_cmd(GDBusConnection *conn, const char *bus_name, const ch
     );
 }
 
-// Печать строки по центру терминала
 static void print_centered(const char *text, int cols, const char *color_prefix, const char *color_suffix) {
     int len = (int)g_utf8_strlen(text, -1);
     int pad = (cols - len) / 2;
@@ -223,15 +217,15 @@ int main(int argc, char **argv) {
         if (strcmp(argv[i], "--once") == 0 || strcmp(argv[i], "-1") == 0) {
             once_mode = 1;
         } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-            printf("Использование: %s [опции]\n", argv[0]);
-            printf("Опции:\n");
-            printf("  --once, -1     Однократный вывод без TUI-режима (не переходит в экран как nvim)\n");
-            printf("  -h, --help     Справка\n");
-            printf("\nГорячие клавиши в TUI-режиме:\n");
-            printf("  Space          Воспроизведение / Пауза\n");
-            printf("  n              Следующий трек\n");
-            printf("  p              Предыдущий трек\n");
-            printf("  q, Esc         Выход\n");
+            printf("Usage: %s [options]\n", argv[0]);
+            printf("Options:\n");
+            printf("  --once, -1     Single output without TUI mode\n");
+            printf("  -h, --help     Show help\n");
+            printf("\nKeybindings:\n");
+            printf("  Space          Play / Pause\n");
+            printf("  n              Next track\n");
+            printf("  p              Previous track\n");
+            printf("  q, Esc         Quit\n");
             return 0;
         }
     }
@@ -241,7 +235,7 @@ int main(int argc, char **argv) {
     GError *error = NULL;
     GDBusConnection *conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
     if (!conn) {
-        fprintf(stderr, "Ошибка подключения к D-Bus: %s\n", error ? error->message : "unknown");
+        fprintf(stderr, "Failed to connect to D-Bus: %s\n", error ? error->message : "unknown");
         if (error) g_error_free(error);
         return 1;
     }
@@ -259,7 +253,6 @@ int main(int argc, char **argv) {
     char last_status[64] = {0};
 
     while (running) {
-        // 1. Поиск плеера в D-Bus
         GVariant *reply = g_dbus_connection_call_sync(
             conn,
             "org.freedesktop.DBus",
@@ -304,7 +297,6 @@ int main(int argc, char **argv) {
             error = NULL;
         }
 
-        // Проверяем, изменился ли трек или статус
         if (found) {
             const char *t = chosen.title ? chosen.title : "";
             const char *s = chosen.playback_status ? chosen.playback_status : "";
@@ -324,7 +316,6 @@ int main(int argc, char **argv) {
                 ws.ws_row = 24;
             }
 
-            // Очищаем экран (в alternate buffer)
             if (!once_mode) {
                 printf("\033[H\033[2J");
             }
@@ -340,18 +331,13 @@ int main(int argc, char **argv) {
                 }
                 fflush(stdout);
             } else {
-                // Расчет адаптивного размера обложки под терминал
-                // Оставляем 7 строк снизу под метаданные и подсказки
                 int max_h = ws.ws_row - 8;
                 if (max_h < 4) max_h = 4;
 
-                // Не растягивать шире 65% ширины терминала и не более 56 столбцов
                 int max_w = (int)(ws.ws_col * 0.65);
                 if (max_w > 56) max_w = 56;
                 if (max_w < 10) max_w = 10;
 
-                // Символ в терминале примерно в 2 раза выше ширины (1:2),
-                // поэтому для квадратного изображения w = h * 2
                 int cover_h = max_h;
                 int cover_w = cover_h * 2;
 
@@ -360,7 +346,6 @@ int main(int argc, char **argv) {
                     cover_h = cover_w / 2;
                 }
 
-                // Ограничиваем максимальную высоту 18 строками, чтобы не было слишком гигантским
                 if (cover_h > 18) {
                     cover_h = 18;
                     cover_w = cover_h * 2;
@@ -374,7 +359,6 @@ int main(int argc, char **argv) {
 
                 if (local_cover && access(local_cover, R_OK) == 0) {
                     char chafa_cmd[1024];
-                    // Рендерим строго в symbols режиме (Unicode блоки), чтобы не сыпались sixel-коды
                     snprintf(chafa_cmd, sizeof(chafa_cmd), "chafa --format symbols --symbols vhalf+quad+space --colors 256 --size %dx%d \"%s\" 2>/dev/null", cover_w, cover_h, local_cover);
                     FILE *fp = popen(chafa_cmd, "r");
 
@@ -382,7 +366,6 @@ int main(int argc, char **argv) {
                         char buf[4096];
                         cover_lines = malloc(sizeof(char *) * 128);
                         while (fgets(buf, sizeof(buf), fp) && cover_lines_count < 120) {
-                            // Удаляем trailing newline
                             size_t l = strlen(buf);
                             while (l > 0 && (buf[l-1] == '\n' || buf[l-1] == '\r')) {
                                 buf[--l] = '\0';
@@ -393,7 +376,6 @@ int main(int argc, char **argv) {
                     }
                 }
 
-                // Вертикальное центрирование
                 int total_height = cover_lines_count + 5;
                 int top_pad = (ws.ws_row - total_height) / 2;
 
@@ -402,7 +384,6 @@ int main(int argc, char **argv) {
 
                 for (int i = 0; i < top_pad; i++) putchar('\n');
 
-                // Отрисовка центрированной обложки
                 int h_pad = (ws.ws_col - cover_w) / 2;
                 if (h_pad < 0) h_pad = 0;
 
@@ -416,13 +397,12 @@ int main(int argc, char **argv) {
 
                 putchar('\n');
 
-                // Форматирование метаданных (БЕЗ ЭМОДЗИ)
                 char line1[512], line2[512], line3[512];
 
                 const char *status_str = chosen.playback_status ? chosen.playback_status : "STOPPED";
-                const char *status_col = "\033[33m"; // yellow
+                const char *status_col = "\033[33m";
                 if (g_ascii_strcasecmp(status_str, "Playing") == 0) {
-                    status_col = "\033[1;32m"; // bright green
+                    status_col = "\033[1;32m";
                 }
 
                 snprintf(line1, sizeof(line1), "[%s]  %s", status_str, chosen.title ? chosen.title : "Unknown Title");
@@ -437,7 +417,6 @@ int main(int argc, char **argv) {
                     snprintf(line3, sizeof(line3), "Album: %s", chosen.album);
                     print_centered(line3, ws.ws_col, "\033[38;5;250m", "\033[0m");
                 }
-
 
                 if (!once_mode) {
                     putchar('\n');
@@ -455,17 +434,16 @@ int main(int argc, char **argv) {
             break;
         }
 
-        // Ожидание ввода клавиши с таймаутом 400 мс
         fd_set fds;
         FD_ZERO(&fds);
         FD_SET(STDIN_FILENO, &fds);
-        struct timeval tv = {0, 400000}; // 400 ms
+        struct timeval tv = {0, 400000};
 
         int sel = select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
         if (sel > 0 && FD_ISSET(STDIN_FILENO, &fds)) {
             char c = 0;
             if (read(STDIN_FILENO, &c, 1) > 0) {
-                if (c == 'q' || c == 'Q' || c == 27) { // q, Q или Esc
+                if (c == 'q' || c == 'Q' || c == 27) {
                     break;
                 } else if (c == ' ') {
                     if (current_player.bus_name) {

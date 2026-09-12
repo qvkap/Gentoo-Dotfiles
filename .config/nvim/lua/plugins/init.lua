@@ -1,5 +1,4 @@
 return {
-  -- Colorscheme
   {
     "folke/tokyonight.nvim",
     priority = 1000,
@@ -16,7 +15,6 @@ return {
     end,
   },
 
-  -- Treesitter
   {
     "nvim-treesitter/nvim-treesitter",
     branch = "master",
@@ -45,7 +43,6 @@ return {
     end,
   },
 
-  -- Telescope
   {
     "nvim-telescope/telescope.nvim",
     branch = "0.1.x",
@@ -69,7 +66,6 @@ return {
     end,
   },
 
-  -- File Explorer
   {
     "nvim-tree/nvim-tree.lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -84,7 +80,6 @@ return {
     end,
   },
 
-  -- LSP
   {
     "neovim/nvim-lspconfig",
     event = "BufReadPost",
@@ -153,7 +148,6 @@ return {
     end,
   },
 
-  -- Completion
   {
     "hrsh7th/nvim-cmp",
     event = "InsertEnter",
@@ -215,7 +209,6 @@ return {
     end,
   },
 
-  -- Statusline
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -227,7 +220,6 @@ return {
     end,
   },
 
-  -- Git signs
   {
     "lewis6991/gitsigns.nvim",
     event = "BufReadPre",
@@ -248,7 +240,6 @@ return {
     end,
   },
 
-  -- Autopairs
   {
     "windwp/nvim-autopairs",
     event = "InsertEnter",
@@ -264,7 +255,6 @@ return {
     end,
   },
 
-  -- Comments
   {
     "numToStr/Comment.nvim",
     keys = {
@@ -276,7 +266,6 @@ return {
     end,
   },
 
-  -- Which-key
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
@@ -287,7 +276,6 @@ return {
     end,
   },
 
-  -- Better UI for cmdline and notifications
   {
     "folke/noice.nvim",
     event = "VeryLazy",
@@ -304,7 +292,6 @@ return {
     end,
   },
 
-  -- Indent guides
   {
     "lukas-reineke/indent-blankline.nvim",
     main = "ibl",

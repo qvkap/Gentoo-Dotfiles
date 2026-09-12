@@ -17,8 +17,8 @@ esac
 
 vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
 if echo "$vol" | grep -q "MUTED"; then
-    notify-send -h string:x-canonical-private-synchronous:vol "Звук" "Без звука"
+    notify-send -h string:x-canonical-private-synchronous:vol "Audio" "Muted"
 else
     val=$(echo "$vol" | awk '{print int($2*100)}')
-    notify-send -h int:value:"$val" -h string:x-canonical-private-synchronous:vol "Громкость" "$val%"
+    notify-send -h int:value:"$val" -h string:x-canonical-private-synchronous:vol "Volume" "$val%"
 fi

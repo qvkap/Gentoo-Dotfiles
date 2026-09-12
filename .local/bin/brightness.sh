@@ -22,4 +22,4 @@ if [ "$new" != "$cur" ]; then
 fi
 
 pct=$(( new * 100 / max ))
-notify-send -h int:value:"$pct" -h string:x-canonical-private-synchronous:brightness "Яркость" "$pct%"
+notify-send -h int:value:"$pct" -h string:x-canonical-private-synchronous:brightness "Brightness" "$pct%"

@@ -116,3 +116,5 @@ for_window [window_type="dialog"] floating enable
 for_window [app_id="xdg-desktop-portal-gtk"] floating enable, move position center
 
 exec mako
+exec /home/rorka/.local/bin/sway-session.py restore
+exec /home/rorka/.local/bin/sway-session-daemon.sh

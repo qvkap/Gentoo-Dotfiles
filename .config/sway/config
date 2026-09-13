@@ -80,9 +80,11 @@ shadows disable
 layer_effects "launcher" blur enable
 
 output * bg /home/rorka/Pictures/wallpapers/walpper.png fill
+output eDP-1 color_profile srgb
 
 exec dbus-update-activation-environment --all
 exec xsettingsd
+exec gammastep -m wayland -O 6500 -g 0.85:0.85:0.85
 
 exec /home/rorka/.local/bin/audio-start.sh
 
@@ -93,9 +95,9 @@ bar {
     pango_markup enabled
     height 30
     gaps 0
-    # tray_output *
-    # tray_padding 4
-    # icon_theme Papirus-Material-You
+    tray_output *
+    tray_padding 4
+    icon_theme Papirus-Material-You
     colors {
         background #181825dd
         statusline #cdd6f4

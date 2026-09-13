@@ -96,33 +96,35 @@ return {
         },
       })
 
-      local lspconfig = require("lspconfig")
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-      local on_attach = function(_, bufnr)
-        local bmap = function(keys, func, desc)
-          vim.keymap.set("n", keys, func, { buffer = bufnr, desc = "LSP: " .. desc })
-        end
-        bmap("gd", vim.lsp.buf.definition, "Go to Definition")
-        bmap("gr", vim.lsp.buf.references, "References")
-        bmap("K", vim.lsp.buf.hover, "Hover")
-        bmap("<leader>ca", vim.lsp.buf.code_action, "Code Action")
-        bmap("<leader>rn", vim.lsp.buf.rename, "Rename")
-        bmap("<leader>D", vim.lsp.buf.type_definition, "Type Definition")
-        bmap("<leader>ds", vim.lsp.buf.document_symbol, "Document Symbols")
-      end
+      vim.api.nvim_create_autocmd("LspAttach", {
+        group = vim.api.nvim_create_augroup("UserLspConfig", {}),
+        callback = function(ev)
+          local bufnr = ev.buf
+          local bmap = function(keys, func, desc)
+            vim.keymap.set("n", keys, func, { buffer = bufnr, desc = "LSP: " .. desc })
+          end
+          bmap("gd", vim.lsp.buf.definition, "Go to Definition")
+          bmap("gr", vim.lsp.buf.references, "References")
+          bmap("K", vim.lsp.buf.hover, "Hover")
+          bmap("<leader>ca", vim.lsp.buf.code_action, "Code Action")
+          bmap("<leader>rn", vim.lsp.buf.rename, "Rename")
+          bmap("<leader>D", vim.lsp.buf.type_definition, "Type Definition")
+          bmap("<leader>ds", vim.lsp.buf.document_symbol, "Document Symbols")
+        end,
+      })
 
       local servers = { "ts_ls", "pyright", "rust_analyzer", "clangd", "html", "cssls", "jsonls", "bashls" }
       for _, server in ipairs(servers) do
-        lspconfig[server].setup({
+        vim.lsp.config(server, {
           capabilities = capabilities,
-          on_attach = on_attach,
         })
+        vim.lsp.enable(server)
       end
 
-      lspconfig.lua_ls.setup({
+      vim.lsp.config("lua_ls", {
         capabilities = capabilities,
-        on_attach = on_attach,
         settings = {
           Lua = {
             diagnostics = { globals = { "vim" } },
@@ -131,6 +133,7 @@ return {
           },
         },
       })
+      vim.lsp.enable("lua_ls")
 
       vim.diagnostic.config({
         virtual_text = { prefix = "●" },

@@ -9,6 +9,7 @@ default_border none
 floating_modifier $mod normal
 
 default_floating_border pixel 2
+focus_on_window_activation focus
 
 client.focused          #fab387 #181825 #cdd6f4 #fab387 #fab387
 client.focused_inactive #313244 #181825 #a6adc8 #313244 #313244
@@ -24,7 +25,7 @@ input "type:touchpad" {
     tap enabled
     tap_button_map lrm
     natural_scroll enabled
-    dwt enabled
+    dwt disabled
     accel_profile adaptive
 }
 
@@ -92,6 +93,9 @@ bar {
     pango_markup enabled
     height 30
     gaps 0
+    # tray_output *
+    # tray_padding 4
+    # icon_theme Papirus-Material-You
     colors {
         background #181825dd
         statusline #cdd6f4

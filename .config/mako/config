@@ -21,10 +21,10 @@ icon-location=left
 default-timeout=5000
 ignore-timeout=0
 
-on-button-left=dismiss
-on-button-right=invoke-default-action
+on-button-left=invoke-default-action
+on-button-right=dismiss
 on-button-middle=dismiss-all
-on-touch=dismiss
+on-touch=invoke-default-action
 
 [urgency=low]
 border-color=#313244

@@ -101,34 +101,91 @@ case "$resp" in
 esac
 
 # ====================================================================
-# 2. Dotfiles Deployment
+# 2. Dotfiles Deployment (Selective or All)
 # ====================================================================
-echo "==> Deploying configuration files to $TARGET_HOME..."
-
 mkdir -p "$TARGET_HOME/.config"
 mkdir -p "$TARGET_HOME/.local/bin"
 mkdir -p "$TARGET_HOME/.local/src/nowplaying"
 mkdir -p "$TARGET_HOME/Pictures/wallpapers"
 
-cp -r "$SCRIPT_DIR/.config/"* "$TARGET_HOME/.config/"
-cp -r "$SCRIPT_DIR/.local/bin/"* "$TARGET_HOME/.local/bin/"
-cp -r "$SCRIPT_DIR/.local/src/"* "$TARGET_HOME/.local/src/"
-cp -r "$SCRIPT_DIR/Pictures/"* "$TARGET_HOME/Pictures/"
+deploy_item() {
+    src="$1"
+    dst="$2"
+    name="$3"
+    printf "Install %s? [Y/n]: " "$name"
+    read -r ans
+    case "$ans" in
+        [nN][oO]|[nN])
+            echo "  -> Skipped $name"
+            ;;
+        *)
+            if [ -d "$src" ]; then
+                mkdir -p "$dst"
+                cp -r "$src/"* "$dst/"
+            elif [ -f "$src" ]; then
+                mkdir -p "$(dirname "$dst")"
+                cp "$src" "$dst"
+            fi
+            echo "  -> Installed $name"
+            ;;
+    esac
+}
 
-cp "$SCRIPT_DIR/.zshrc" "$TARGET_HOME/.zshrc"
-cp "$SCRIPT_DIR/.zprofile" "$TARGET_HOME/.zprofile"
-cp "$SCRIPT_DIR/.gtkrc-2.0" "$TARGET_HOME/.gtkrc-2.0"
+printf "\nDo you want to selectively choose components to install? [y/N] (N = install all): "
+read -r selective
+case "$selective" in
+    [yY][eE][sS]|[yY])
+        echo "==> Selective installation mode:"
+        # Individual configs
+        deploy_item "$SCRIPT_DIR/.config/sway" "$TARGET_HOME/.config/sway" "Sway & Swaybar configuration"
+        deploy_item "$SCRIPT_DIR/.config/foot" "$TARGET_HOME/.config/foot" "Foot terminal configuration"
+        deploy_item "$SCRIPT_DIR/.config/fuzzel" "$TARGET_HOME/.config/fuzzel" "Fuzzel app launcher"
+        deploy_item "$SCRIPT_DIR/.config/mako" "$TARGET_HOME/.config/mako" "Mako notification daemon"
+        deploy_item "$SCRIPT_DIR/.config/nvim" "$TARGET_HOME/.config/nvim" "Neovim config & plugins"
+        deploy_item "$SCRIPT_DIR/.config/pipewire" "$TARGET_HOME/.config/pipewire" "PipeWire Bit-Perfect audio config"
+        deploy_item "$SCRIPT_DIR/.config/wireplumber" "$TARGET_HOME/.config/wireplumber" "WirePlumber configuration"
+        deploy_item "$SCRIPT_DIR/.config/cava" "$TARGET_HOME/.config/cava" "Cava audio visualizer"
+        deploy_item "$SCRIPT_DIR/.config/swaylock" "$TARGET_HOME/.config/swaylock" "Swaylock screen locker"
+        deploy_item "$SCRIPT_DIR/.config/gamemode.ini" "$TARGET_HOME/.config/gamemode.ini" "GameMode performance settings"
+        deploy_item "$SCRIPT_DIR/.config/gtk-3.0" "$TARGET_HOME/.config/gtk-3.0" "GTK-3.0 theme settings"
+        deploy_item "$SCRIPT_DIR/.config/gtk-4.0" "$TARGET_HOME/.config/gtk-4.0" "GTK-4.0 theme settings"
+        deploy_item "$SCRIPT_DIR/.config/xsettingsd" "$TARGET_HOME/.config/xsettingsd" "XSettingsd daemon config"
+        deploy_item "$SCRIPT_DIR/.config/environment.d" "$TARGET_HOME/.config/environment.d" "Environment variables"
+        deploy_item "$SCRIPT_DIR/.config/xdg-desktop-portal" "$TARGET_HOME/.config/xdg-desktop-portal" "XDG desktop portal configs"
+        deploy_item "$SCRIPT_DIR/.config/xdg-desktop-portal-wlr" "$TARGET_HOME/.config/xdg-desktop-portal-wlr" "XDG portal wlr"
+        
+        # Shell & Scripts
+        deploy_item "$SCRIPT_DIR/.zshrc" "$TARGET_HOME/.zshrc" "Zsh configuration (.zshrc)"
+        deploy_item "$SCRIPT_DIR/.zprofile" "$TARGET_HOME/.zprofile" "Zsh login profile (.zprofile)"
+        deploy_item "$SCRIPT_DIR/.gtkrc-2.0" "$TARGET_HOME/.gtkrc-2.0" "GTK-2.0 theme (.gtkrc-2.0)"
+        deploy_item "$SCRIPT_DIR/.local/bin" "$TARGET_HOME/.local/bin" "Helper scripts (.local/bin)"
+        deploy_item "$SCRIPT_DIR/Pictures" "$TARGET_HOME/Pictures" "Wallpapers"
+        ;;
+    *)
+        echo "==> Deploying ALL configuration files to $TARGET_HOME..."
+        cp -r "$SCRIPT_DIR/.config/"* "$TARGET_HOME/.config/"
+        cp -r "$SCRIPT_DIR/.local/bin/"* "$TARGET_HOME/.local/bin/"
+        cp -r "$SCRIPT_DIR/.local/src/"* "$TARGET_HOME/.local/src/"
+        cp -r "$SCRIPT_DIR/Pictures/"* "$TARGET_HOME/Pictures/"
+        cp "$SCRIPT_DIR/.zshrc" "$TARGET_HOME/.zshrc"
+        cp "$SCRIPT_DIR/.zprofile" "$TARGET_HOME/.zprofile"
+        cp "$SCRIPT_DIR/.gtkrc-2.0" "$TARGET_HOME/.gtkrc-2.0"
+        ;;
+esac
 
-chmod +x "$TARGET_HOME/.local/bin/"*
-chmod +x "$TARGET_HOME/.config/sway/status.sh"
+# Permissions
+chmod +x "$TARGET_HOME/.local/bin/"* 2>/dev/null || true
+chmod +x "$TARGET_HOME/.config/sway/status.sh" 2>/dev/null || true
 
 # ====================================================================
 # 3. Build nowplaying helper
 # ====================================================================
 if command -v gcc >/dev/null 2>&1 && command -v pkg-config >/dev/null 2>&1; then
-    echo "==> Compiling nowplaying utility..."
-    gcc -O2 "$SCRIPT_DIR/.local/src/nowplaying/main.c" $(pkg-config --cflags --libs gio-2.0) -o "$TARGET_HOME/.local/bin/nowplaying" 2>/dev/null || true
-    chmod +x "$TARGET_HOME/.local/bin/nowplaying" 2>/dev/null || true
+    if [ -f "$SCRIPT_DIR/.local/src/nowplaying/main.c" ]; then
+        echo "==> Compiling nowplaying utility..."
+        gcc -O2 "$SCRIPT_DIR/.local/src/nowplaying/main.c" $(pkg-config --cflags --libs gio-2.0) -o "$TARGET_HOME/.local/bin/nowplaying" 2>/dev/null || true
+        chmod +x "$TARGET_HOME/.local/bin/nowplaying" 2>/dev/null || true
+    fi
 fi
 
-echo "==> Installation complete! Restart Sway or run 'swaymsg reload'."
+echo "\n==> Installation complete! Restart Sway or run 'swaymsg reload'."

@@ -101,7 +101,37 @@ case "$resp" in
 esac
 
 # ====================================================================
-# 2. Dotfiles Deployment (Selective or All)
+# 2. Udev Rules Installation
+# ====================================================================
+install_udev_rules() {
+    if [ -n "$SUDO_CMD" ] && [ -d "$SCRIPT_DIR/etc/udev/rules.d" ]; then
+        echo "==> Installing udev rules to /etc/udev/rules.d/..."
+        $SUDO_CMD mkdir -p /etc/udev/rules.d
+        $SUDO_CMD cp -r "$SCRIPT_DIR/etc/udev/rules.d/"* /etc/udev/rules.d/
+        if command -v udevadm >/dev/null 2>&1; then
+            echo "==> Reloading and triggering udev rules..."
+            $SUDO_CMD udevadm control --reload 2>/dev/null || true
+            $SUDO_CMD udevadm trigger 2>/dev/null || true
+        fi
+        echo "==> Udev rules successfully installed."
+    else
+        echo "[!] Root privileges or doas/sudo required to install udev rules."
+    fi
+}
+
+printf "Install udev rules (NVMe optimization & backlight brightness)? [y/N]: "
+read -r udev_choice
+case "$udev_choice" in
+    [yY][eE][sS]|[yY])
+        install_udev_rules
+        ;;
+    *)
+        echo "Skipping udev rules installation."
+        ;;
+esac
+
+# ====================================================================
+# 3. Dotfiles Deployment (Selective or All)
 # ====================================================================
 mkdir -p "$TARGET_HOME/.config"
 mkdir -p "$TARGET_HOME/.local/bin"

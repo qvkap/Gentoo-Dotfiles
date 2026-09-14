@@ -42,11 +42,38 @@ install_packages() {
     if command -v emerge >/dev/null 2>&1; then
         echo "==> Gentoo detected. Checking and installing required packages..."
         if [ -n "$SUDO_CMD" ]; then
-            # Ensure tray is enabled for swayfx
+            # 1. Check and enable GURU overlay (required for SwayFX)
+            if ! [ -d "/var/db/repos/guru" ] && ! grep -qs "\[guru\]" /etc/portage/repos.conf/* 2>/dev/null; then
+                echo "==> GURU repository not found. Adding GURU overlay..."
+                if command -v eselect >/dev/null 2>&1 && eselect repository list >/dev/null 2>&1; then
+                    $SUDO_CMD eselect repository enable guru
+                    $SUDO_CMD emaint sync -r guru
+                else
+                    $SUDO_CMD mkdir -p /etc/portage/repos.conf
+                    cat << 'EOF_GURU' | $SUDO_CMD tee /etc/portage/repos.conf/guru.conf >/dev/null
+[guru]
+location = /var/db/repos/guru
+sync-type = git
+sync-uri = https://github.com/gentoo-mirror/guru.git
+masters = gentoo
+auto-sync = yes
+EOF_GURU
+                    $SUDO_CMD emaint sync -r guru
+                fi
+            fi
+
+            # 2. Ensure keyword unmask for swayfx (~amd64)
+            $SUDO_CMD mkdir -p /etc/portage/package.accept_keywords
+            if ! grep -qs "gui-wm/swayfx" /etc/portage/package.accept_keywords/* 2>/dev/null; then
+                echo "gui-wm/swayfx ~amd64" | $SUDO_CMD tee -a /etc/portage/package.accept_keywords/swayfx >/dev/null
+            fi
+
+            # 3. Ensure tray USE flag is enabled for swayfx
             $SUDO_CMD mkdir -p /etc/portage/package.use
             if ! grep -qs "gui-wm/swayfx.*tray" /etc/portage/package.use/* 2>/dev/null; then
                 echo "gui-wm/swayfx tray" | $SUDO_CMD tee -a /etc/portage/package.use/swayfx >/dev/null
             fi
+
             echo "==> Running emerge for dotfiles dependencies..."
             $SUDO_CMD emerge -uNDq --keep-going $REQUIRED_PKGS || true
         else

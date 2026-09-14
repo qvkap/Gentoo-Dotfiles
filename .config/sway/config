@@ -37,15 +37,15 @@ bindsym --to-code $mod+Shift+q kill
 bindsym --to-code $mod+f exec /home/rorka/.local/bin/toggle-maximize.py
 bindsym --to-code $mod+Shift+r reload
 bindsym --to-code $mod+Shift+e exit
-bindsym --to-code $mod+1 workspace 1
-bindsym --to-code $mod+2 workspace 2
-bindsym --to-code $mod+3 workspace 3
-bindsym --to-code $mod+4 workspace 4
-bindsym --to-code $mod+5 workspace 5
-bindsym --to-code $mod+6 workspace 6
-bindsym --to-code $mod+7 workspace 7
-bindsym --to-code $mod+8 workspace 8
-bindsym --to-code $mod+9 workspace 9
+bindsym --to-code $mod+1 workspace number 1
+bindsym --to-code $mod+2 workspace number 2
+bindsym --to-code $mod+3 workspace number 3
+bindsym --to-code $mod+4 workspace number 4
+bindsym --to-code $mod+5 workspace number 5
+bindsym --to-code $mod+6 workspace number 6
+bindsym --to-code $mod+7 workspace number 7
+bindsym --to-code $mod+8 workspace number 8
+bindsym --to-code $mod+9 workspace number 9
 
 bindsym XF86AudioRaiseVolume exec /home/rorka/.local/bin/osd.sh vol+
 bindsym XF86AudioLowerVolume exec /home/rorka/.local/bin/osd.sh vol-
@@ -120,3 +120,4 @@ for_window [app_id="xdg-desktop-portal-gtk"] floating enable, move position cent
 exec mako
 exec /home/rorka/.local/bin/sway-session.py restore
 exec /home/rorka/.local/bin/sway-session-daemon.sh
+exec /home/rorka/.local/bin/sway-workspace-icons.py

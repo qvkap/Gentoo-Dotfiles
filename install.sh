@@ -131,11 +131,11 @@ deploy_item() {
     esac
 }
 
-printf "\nDo you want to selectively choose components to install? [y/N] (N = install all): "
-read -r selective
-case "$selective" in
-    [yY][eE][sS]|[yY])
-        echo "==> Selective installation mode:"
+printf "\nInstall all dotfiles and configurations? [Y/n]: "
+read -r install_all_choice
+case "$install_all_choice" in
+    [nN][oO]|[nN])
+        echo "==> Selective installation mode (choose what to install):"
         # Individual configs
         deploy_item "$SCRIPT_DIR/.config/sway" "$TARGET_HOME/.config/sway" "Sway & Swaybar configuration"
         deploy_item "$SCRIPT_DIR/.config/foot" "$TARGET_HOME/.config/foot" "Foot terminal configuration"
